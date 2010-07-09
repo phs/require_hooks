@@ -5,11 +5,13 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "require_hooks"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{React to ActiveSupport loading or auto-loading a file}
+    gem.description = %Q{Extend ActiveSupport to run blocks before or after a file is "require_or_load"ed into memory.}
     gem.email = "phil.h.smith@gmail.com"
     gem.homepage = "http://github.com/phs/require_hooks"
     gem.authors = ["Phil Smith"]
+    gem.add_dependency "activesupport", "3.0.0.beta4"
+    # gem.add_dependency "activesupport", ">= 3.0.0.rc1" # TODO: load_paths is renamed autoload_paths on next release
     gem.add_development_dependency "rspec", ">= 1.2.9"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end

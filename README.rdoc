@@ -1,16 +1,69 @@
 = require_hooks
 
-Description goes here.
+This extension to ActiveSupport adds callbacks to be run before or after the dependency management
+loads specific files.
 
-== Note on Patches/Pull Requests
- 
-* Fork the project.
-* Make your feature addition or bug fix.
-* Add tests for it. This is important so I don't break it in a
-  future version unintentionally.
-* Commit, do not mess with rakefile, version, or history.
-  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
-* Send me a pull request. Bonus points for topic branches.
+Register callbacks with <tt>#before_require</tt> and <tt>#after_require</tt>:
+
+  # app/models/post.rb
+  class Post < ActiveRecord::Base
+  end
+
+  # lib/my_hot_extension.rb
+  module MyHotExtension
+    unloadable # prevent "TypeError: Can't dup NilClass"
+
+    def self.included(post)
+      post.instance_eval do
+        has_many :whatnots
+      end
+    end
+  end
+
+  # config/initializers/my_hot_extension.rb
+  after_require 'post' do
+    require_or_load 'my_hot_extension'
+    Post.send :include, MyHotExtension
+  end
+
+This can be handy if you want to transparently do things when a distant file is loaded (such as
+load local modifications), but you A) can't touch the distant file and B) you don't want to just
+eagerly load it, but react only _if_ it is ever loaded.
+
+= "TypeError: Can't dup NilClass"
+
+This problem isn't directly related to this gem, but it is certainly in the neighborhood of my
+intended usage for it.
+
+Say you're writing a rails plugin that wants to provide an AR model or augment an application
+model.  You put your extension in a module and have your users include it into their model class.
+When they fire up <tt>rails s</tt>, the first request they make works great, but the second one
+falls down crying something about duping NilClass.  If they fire it up in production mode, it
+works fine.
+
+You are being bit by some auto-loading magic rails does behind the scenes.  Things in the user's
+<tt>app</tt> directory are auto-reloaded every request in development mode.  Things in engines,
+plugins, etc, are auto-loaded once. This impedance mismatch between "every" and "once" is what's
+causing the pain: if you could change the "once"s to "every"s, you'd be fine.
+
+There are some ways to proceed.  The first is a monkey trick: explicitly mark your extension as
+"unloadable", which tells rails to remove the module at the end of the request (in dev mode only.)
+This tricks the loader into concluding, on the next request, that your module hadn't been loaded
+after all (and so it hasn't been loaded once), and happily loads it again.
+
+A better way may be to just ask rails to not treat your module as a "load once" dependency.  In the
+console of an application using your extension, peek at
+<tt>ActiveSupport::Dependencies.autoload_paths</tt> and
+<tt>ActiveSupport::Dependencies.autoload_once_paths</tt>, which is a strict subset of the former.
+(Actually, rails 3 beta4 and earlier call them <tt>load_paths</tt> and <tt>load_once_paths</tt>.)
+Notice <tt>autoload_once_paths</tt> includes your extension's load paths; this is why rails treats
+it as a "load once" dependency.  You can remove them from the array to fix the problem (they'll still
+be in <tt>autoload_paths</tt>.)
+
+This area of the rails code appears to currently be in flux (as of just before 3.0.0 rc1.)  If you
+are encountering this problem and the above doesn't look right or work for you, check out the
+<tt>autoload_once_paths</tt> and <tt>autoload_paths</tt> properties of your engine's configuration
+object.
 
 == Copyright
 
