@@ -60,6 +60,8 @@ Notice <tt>autoload_once_paths</tt> includes your extension's load paths; this i
 it as a "load once" dependency.  You can remove them from the array to fix the problem (they'll still
 be in <tt>autoload_paths</tt>.)
 
+See also http://groups.google.com/group/rubyonrails-talk/browse_thread/thread/f54f18f4d4354926/ae7367ee33c07e97?show_docid=ae7367ee33c07e97
+
 This area of the rails code appears to currently be in flux (as of just before 3.0.0 rc1.)  If you
 are encountering this problem and the above doesn't look right or work for you, check out the
 <tt>autoload_once_paths</tt> and <tt>autoload_paths</tt> properties of your engine's configuration

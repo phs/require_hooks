@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/require_hooks.rb",
+     "require_hooks.gemspec",
      "spec/require_hooks_spec.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb"
